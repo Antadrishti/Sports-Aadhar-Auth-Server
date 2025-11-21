@@ -41,7 +41,7 @@ app.post("/auth/register", async (req, res) => {
 
         const token = jwt.sign(
             { id: user._id, email: user.email },
-            "SECRET_KEY", 
+            process.env.SECRET, 
             { expiresIn: "7d" }
         );
 
@@ -72,7 +72,7 @@ app.post("/auth/login", async (req, res) => {
 
         const token = jwt.sign(
             { id: user._id, email: user.email },
-            "SECRET_KEY",
+            process.env.SECRET,
             { expiresIn: "7d" }
         );
 
@@ -92,7 +92,7 @@ app.get("/profile", async (req, res) => {
     if (!token) return res.status(401).json({ error: "No token provided" });
 
     try {
-        const verified = jwt.verify(token, "SECRET_KEY");
+        const verified = jwt.verify(token, process.env.SECRET);
         const user = await User.findById(verified.id);
         res.json(user);
     } catch (err) {
