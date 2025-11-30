@@ -146,14 +146,31 @@ router.post('/add-phone', requireAuth, async (req, res) => {
       { otpHash, expiresAt },
       { new: true, upsert: true, setDefaultsOnInsert: true }
     );
+    let smsResult;
     try {
-      await sendOtpViaVonage(phoneNumber, otp);
+      smsResult = await sendOtpViaVonage(phoneNumber, otp);
+      if (smsResult?.skipped) {
+        console.warn('Vonage SMS skipped for add-phone:', smsResult);
+      }
+      if (process.env.NODE_ENV !== 'production' && smsResult?.data) {
+        console.log('Vonage SMS response:', smsResult.data);
+      }
     } catch (smsErr) {
       console.error('Vonage SMS error:', smsErr);
-      return res.status(502).json({ error: 'Failed to send OTP via SMS' });
+      const payload = { error: 'Failed to send OTP via SMS' };
+      if (process.env.NODE_ENV !== 'production') {
+        payload.detail = smsErr?.message || String(smsErr);
+        if (smsErr?.details) payload.vonage = smsErr.details;
+        if (smsErr?.status) payload.status = smsErr.status;
+      }
+      return res.status(502).json(payload);
     }
     const payload = { message: 'OTP sent to phone' };
-    if (process.env.NODE_ENV !== 'production') payload.otp = otp;
+    if (process.env.NODE_ENV !== 'production') {
+      payload.otp = otp;
+      payload.smsStatus = smsResult?.skipped ? 'skipped' : 'sent';
+      if (smsResult?.reason) payload.smsReason = smsResult.reason;
+    }
     res.json(payload);
   } catch (err) {
     console.error(err);
