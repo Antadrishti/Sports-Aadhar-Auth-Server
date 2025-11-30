@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { connectDb } from './config/db.js';
 import authRoutes from './routes/auth.js';
 import profileRoutes from './routes/profile.js';
+import athleteRoutes from './routes/athletes.js';
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ connectDb();
 
 app.use('/auth', authRoutes);
 app.use('/profile', profileRoutes);
+app.use('/athletes', athleteRoutes);
 
 app.listen(process.env.PORT, () =>
   console.log(`Server running port ${process.env.PORT}`)

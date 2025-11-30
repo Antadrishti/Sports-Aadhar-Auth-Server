@@ -10,21 +10,49 @@ import { sendOtpViaVonage } from '../services/vonage.js';
 const router = express.Router();
 
 const signupHandler = async (req, res) => {
-  const { name, email, password } = req.body;
-  if (!name || !email || !password) {
-    return res.status(400).json({ error: 'Name, email and password are required' });
+  const { name, email, password, age, city, state, pincode } = req.body;
+  if (!name) return res.status(400).json({ error: 'Name is required' });
+  if (!email) return res.status(400).json({ error: 'Email is required' });
+  if (!password) return res.status(400).json({ error: 'Password is required' });
+  if (age === undefined || age === null || age === '') {
+    return res.status(400).json({ error: 'Age is required' });
   }
+  if (!city) return res.status(400).json({ error: 'City is required' });
+  if (!state) return res.status(400).json({ error: 'State is required' });
+  if (!pincode) return res.status(400).json({ error: 'Pincode is required' });
   if (!looksLikeEmail(email)) {
     return res.status(400).json({ error: 'Invalid email format' });
   }
   try {
+    const parsedAge = Number(age);
+    if (!Number.isFinite(parsedAge) || parsedAge <= 0) {
+      return res.status(400).json({ error: 'Valid age is required' });
+    }
+    const cityValue = String(city).trim();
+    const stateValue = String(state).trim();
+    const pincodeValue = String(pincode).trim();
+    if (!cityValue || !stateValue || !pincodeValue) {
+      return res.status(400).json({ error: 'City, state and pincode cannot be empty' });
+    }
     const hashedPassword = bcrypt.hashSync(password, 10);
-    const user = await User.create({ name, email, password: hashedPassword });
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      age: parsedAge,
+      city: cityValue,
+      state: stateValue,
+      pincode: pincodeValue,
+    });
     const token = signToken(user);
     res.json({
       id: user._id,
       name: user.name,
       email: user.email,
+      age: user.age,
+      city: user.city,
+      state: user.state,
+      pincode: user.pincode,
       phone: user.phone,
       isPhoneVerified: user.isPhoneVerified,
       token,
@@ -37,6 +65,31 @@ const signupHandler = async (req, res) => {
 
 router.post('/signup', signupHandler);
 router.post('/register', signupHandler);
+
+
+
+router.get('/profile', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    res.json({
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      age: user.age,
+      city: user.city,
+      state: user.state,
+      pincode: user.pincode,
+      phone: user.phone,
+      isPhoneVerified: user.isPhoneVerified,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(401).json({ error: 'Invalid token' });
+  }
+});
 
 router.post('/login', async (req, res) => {
   const { identifier, credential } = req.body;
@@ -58,6 +111,10 @@ router.post('/login', async (req, res) => {
       id: user._id,
       name: user.name,
       email: user.email,
+      age: user.age,
+      city: user.city,
+      state: user.state,
+      pincode: user.pincode,
       phone: user.phone,
       isPhoneVerified: user.isPhoneVerified,
       token,
@@ -67,6 +124,8 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+
+
 
 router.post('/add-phone', requireAuth, async (req, res) => {
   const { phoneNumber } = req.body;
