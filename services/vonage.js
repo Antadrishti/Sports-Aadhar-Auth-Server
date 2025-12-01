@@ -13,8 +13,6 @@ export const sendOtpViaVonage = async (phone, otp) => {
   if (typeof fetch !== 'function') {
     throw new Error('fetch is unavailable; use Node 18+ or add a fetch polyfill');
   }
-
-
   const isProd = process.env.NODE_ENV === 'production';
   const apiKey = process.env.VONAGE_API_KEY;
   const apiSecret = process.env.VONAGE_API_SECRET;

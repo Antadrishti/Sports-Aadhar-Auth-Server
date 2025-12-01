@@ -26,4 +26,18 @@ router.get('/', async (_req, res) => {
   }
 });
 
+router.get('/:id', async (req, res) => {
+  try {
+    const athlete = await User.findById(req.params.id).select('name').lean();
+    if (!athlete) return res.status(404).json({ error: 'Athlete not found' });
+    res.json({ id: athlete._id, name: athlete.name });
+  } catch (err) {
+    if (err?.name === 'CastError') {
+      return res.status(400).json({ error: 'Invalid athlete id' });
+    }
+    console.error('Failed to fetch athlete by id:', err);
+    res.status(500).json({ error: 'Failed to fetch athlete' });
+  }
+});
+
 export default router;

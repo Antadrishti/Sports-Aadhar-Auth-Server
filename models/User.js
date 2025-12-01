@@ -16,6 +16,8 @@ const UserSchema = new mongoose.Schema(
     pincode: { type: String, required: true, trim: true },
     phone: { type: String, unique: true, sparse: true },
     isPhoneVerified: { type: Boolean, default: false },
+    profilePictureUrl: { type: String, default: null },
+    profilePicturePublicId: { type: String, default: null },
   },
   { timestamps: true }
 );

@@ -55,6 +55,8 @@ const signupHandler = async (req, res) => {
       pincode: user.pincode,
       phone: user.phone,
       isPhoneVerified: user.isPhoneVerified,
+      profilePictureUrl: user.profilePictureUrl,
+      profilePicturePublicId: user.profilePicturePublicId,
       token,
     });
   } catch (err) {
@@ -82,6 +84,8 @@ router.get('/profile', requireAuth, async (req, res) => {
       pincode: user.pincode,
       phone: user.phone,
       isPhoneVerified: user.isPhoneVerified,
+      profilePictureUrl: user.profilePictureUrl,
+      profilePicturePublicId: user.profilePicturePublicId,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     });
@@ -117,6 +121,8 @@ router.post('/login', async (req, res) => {
       pincode: user.pincode,
       phone: user.phone,
       isPhoneVerified: user.isPhoneVerified,
+      profilePictureUrl: user.profilePictureUrl,
+      profilePicturePublicId: user.profilePicturePublicId,
       token,
     });
   } catch (err) {
